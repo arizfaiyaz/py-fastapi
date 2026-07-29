@@ -76,3 +76,25 @@ def delete_student(student_id: int):
         status_code =  404,
         detail = "Student not found"
     )
+
+
+#mini challenge: create a new endpoint that returns the total number of students in the list.
+@app.get("/students/count")
+def get_student_count():
+    return {"total_students": len(students)}
+
+# 2  mini  challenge: create a new endpoint that returns  query parameters for filtering students by branch. 
+
+@app.get("/students")
+def get_students_branch(branch: str | None =  None):
+    
+    if  branch is None:
+        return students
+    
+    filtered_students =[]
+    
+    for student in  students:
+        if student["branch"].lower() == branch.lower():
+            filtered_students.append(student)
+    
+    return filtered_students
