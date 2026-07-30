@@ -1,8 +1,9 @@
-from fastapi import APIRouter, HTTPException
-
+from fastapi import APIRouter, HTTPException, Depends
+from app.dependencies import get_db
+from sqlalchemy.orm import Session
+from app.models.student import Student
 from app.schema.student import StudentCreate
 
-from app.database import students
 
 router = APIRouter(
     prefix="/students",
@@ -10,30 +11,41 @@ router = APIRouter(
 )
 
 @router.post("/")
-async def create_student(student: StudentCreate):
+async def create_student(
+    student: StudentCreate,
+    db: Session = Depends(get_db)
+):
     """
     Create a new student.
     """
     
-    new_student = {
-        "id": len(students) + 1,
-        "name": student.name,
-        "age": student.age,
-        "branch": student.branch
-    }
-    student.append(new_student)
+    new_student = Student(
+        name=student.name,
+        age=student.age,
+        branch=student.branch
+    )
+    db.add(new_student)
+    db.commit()
+    db.refresh(new_student)
     return new_student
 
 @router.get("/{student_id}")
-async def get_student(student_id: int):
+async def get_student(
+    student_id: int,
+    db: Session = Depends(get_db)
+):
     """
     Get a student by ID.
     """
     
-    for student in students:
-        if student["id"] == student.id:
-            return student
-        
+    student = db.query(Student).filter(Student.id == student_id).first()
+    if not student:
+        raise HTTPException(
+            status_code=404,
+            details="Student not found"
+        )
+    return student
+
     raise HTTPException(
         status_code=404,
         details="Student not found"
@@ -42,17 +54,25 @@ async def get_student(student_id: int):
 @router.put("/{student_id}")
 async def update_student(
     student_id: int,
-    updated:StudentCreate):
+    updated:StudentCreate,
+    db: Session = Depends(get_db)
+):
     
     """
     Update a student by ID.
     """
-    for student in students:
-        if student["id"]==student_id:
-            student["name"] = updated.name
-            student["age"] = updated.age
-            student["branch"] = updated.branch
-            return student
+    student = db.query(Student).filter(Student.id == student_id).first()
+    if not student:
+        raise HTTPException(
+            status_code=404,
+            details="Student not found"
+        )
+    student.name = updated.name
+    student.age = updated.age
+    student.branch = updated.branch
+    db.commit()
+    db.refresh(student)
+    return student
     
     raise HTTPException(
         status_code=404,
@@ -61,17 +81,23 @@ async def update_student(
     
 @router.delete("/{student_id}")
 async def delete_student(
-    student_id: int
+    student_id: int,
+    db: Session = Depends(get_db)
 ):
     """
     Delete a student by ID.
     """
     
-    for student in students:
-        if student["id"]==student_id:
-            students.remove(student)
-            return {
-                "message": "Deleted successfully"
+    student = db.query(Student).filter(Student.id == student_id).first()
+    if not student:
+        raise HTTPException(
+            status_code=404,
+            details="Student not found"
+        )
+    db.delete(student)
+    db.commit()
+    return {
+        "message": "Deleted successfully"
             }
     raise HTTPException(
         status_code=404,
@@ -79,17 +105,14 @@ async def delete_student(
     )
 
 @router.get("/")
-async def get_students(branch: str | None = None):
+async def get_students(branch: str | None = None, db: Session = Depends(get_db)):
     """
     Filter students by branch.
     """
     if branch is None:
-        return students
+        return db.query(Student).all()
     
-    return [
-        student
-        for student in students
-        if student["branch"].lower() == branch.lower()
-    ]
+    return db.query(Student).filter(Student.branch == branch).all()
+
 
 
