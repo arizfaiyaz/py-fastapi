@@ -21,4 +21,3 @@ def create_item(item: Item):
 
     return new_item
 
-@app.get
