@@ -24,13 +24,6 @@ async def create_student(student: StudentCreate):
     student.append(new_student)
     return new_student
 
-@router.get("/")
-async def get_student():
-    """
-    Get all students.
-    """
-    return students
-
 @router.get("/{student_id}")
 async def get_student(student_id: int):
     """
@@ -85,8 +78,8 @@ async def delete_student(
         details="Student not found"
     )
 
-@router.get("")
-async def filter_students(branch: str | None = None):
+@router.get("/")
+async def get_students(branch: str | None = None):
     """
     Filter students by branch.
     """
