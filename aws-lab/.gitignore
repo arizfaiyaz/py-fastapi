@@ -15,5 +15,5 @@ __pycache__/
 .DS_Store
 Thumbs.db
 
-#virtuaal env
+#virtual env
 .venv/
