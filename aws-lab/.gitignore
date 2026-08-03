@@ -1,0 +1,19 @@
+__pycache__/
+*.py[cod]
+
+# env
+.env
+
+# Testing and tooling
+.pytest_cache/
+.mypy_cache/
+
+# editor config
+.vscode/
+
+# os files
+.DS_Store
+Thumbs.db
+
+#virtuaal env
+.venv/
