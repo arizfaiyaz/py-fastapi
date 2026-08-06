@@ -6,7 +6,7 @@ from sqlalchemy import Column, create_engine, Integer, String
 from fastapi.responses import RedirectResponse
 import string, random
 
-DATABASE_URL = "sqlite:///./test.db"
+DATABASE_URL = "sqlite://./test.db"
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
@@ -69,5 +69,23 @@ def create_short_url(request: URLRequest, db: Session = Depends(get_db)):
         "short_code": new_url.short_code,
         "short_url": f"https://localhost:8000/{new_url.short_code}"
     }
+
+@app.get("/all", response_model=list[URLResponse])
+def get_all_urls(db: Session = Depends(get_db)):
+    urls = db.query(URL).all()
+    result = []
+    for url in urls:
+        result.append({
+            "original_url": url.original_url,
+            "short_code": url.short_code,
+            "short_url": f"https://localhost:8000/{url.short_code}"
+        })
+    return result
+
+@app.get("/{short_url}")
+def redirect_to_original(short_code: str, db: Session = Depends(get_db)):
+    url_entry = db.query(URL).filter(URL.short_code == short_code).first()
+    if not url_entry:
+        raise HTTPException(status_code=404, detail="Short URL not found")
     
-        
+    return RedirectResponse(url=url_entry.original_url)
