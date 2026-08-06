@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, HttpUrl
-from sqlalchemy.orm import sessionmaker, declarative_base, session
+from sqlalchemy.orm import Session, sessionmaker, declarative_base, session
 from sqlalchemy import Column, create_engine, Integer, String
 from fastapi.responses import RedirectResponse
 import string, random
@@ -34,7 +34,7 @@ class URLResponse(BaseModel):
     short_code: str
     short_url: str
     
-    class COnfig:
+    class Config:
         orm_mode = True
 
 def generate_short_code(length = 6):
@@ -42,4 +42,32 @@ def generate_short_code(length = 6):
 
 
 app = FastAPI(title="URL Shortener", description="A simple URL shortener API", version="1.0.0")
-app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"], allow_credentials=True)
+
+@app.post("/shorten", response_model=URLResponse)
+def create_short_url(request: URLRequest, db: Session = Depends(get_db)):
+    original_url = str(request.original_url)
+    
+    existing = db.query(URL).filter(URL.original_url == original_url).first()
+    if existing:
+        return {
+            "original_url": existing.original_url,
+            "short_code": existing.short_code,
+            "short_url": f"https://localhost:8000/{existing.short_code}"
+        }
+    short_code = generate_short_code()
+    while db.query(URL).filter(URL.short_code == short_code).first():
+        short_code = generate_short_code()
+    
+    new_url = URL(original_url=original_url,  short_code=short_code) 
+    db.add(new_url) #adding to db
+    db.commit()
+    db.refresh(new_url)
+    
+    return {
+        "original_url": new_url.original_url,
+        "short_code": new_url.short_code,
+        "short_url": f"https://localhost:8000/{new_url.short_code}"
+    }
+    
+        
