@@ -80,9 +80,9 @@ export function UrlShortner() {
   };
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-6xl items-center px-4 py-10 sm:px-6 lg:px-8">
-      <section className="w-full overflow-hidden rounded-[2rem] border border-white/70 bg-white/70 shadow-[0_24px_80px_rgba(255,190,145,0.25)] backdrop-blur">
-        <div className="grid gap-6 border-b border-amber-200/70 bg-gradient-to-r from-[#FFBE91] to-[#CFEBFF] p-6 sm:p-8 lg:grid-cols-[1.3fr_0.7fr] lg:items-end">
+    <main className="relative mx-auto flex min-h-screen w-full max-w-7xl items-center px-4 py-10 sm:px-6 lg:px-8">
+      <section className="relative w-full overflow-hidden rounded-[2.5rem] border border-white/70 bg-white/75 shadow-[0_28px_90px_rgba(255,190,145,0.22)] backdrop-blur">
+        <div className="grid gap-6 border-b border-amber-200/70 bg-gradient-to-r from-[#FFBE91] via-[#FFDDB0] to-[#CFEBFF] p-7 sm:p-10 lg:grid-cols-[1.15fr_0.85fr] lg:items-end">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.35em] text-[#6a4c2c]">Smart link shortening</p>
             <h1 className="mt-3 text-3xl font-semibold tracking-tight text-[#4f3422] sm:text-4xl">
@@ -93,7 +93,7 @@ export function UrlShortner() {
             </p>
           </div>
 
-          <form className="flex flex-col gap-3 rounded-3xl bg-white/70 p-4 shadow-sm ring-1 ring-white/60 sm:flex-row" onSubmit={handleSubmit}>
+          <form className="flex flex-col gap-3 rounded-[1.75rem] bg-white/72 p-4 shadow-sm ring-1 ring-white/60 sm:flex-row" onSubmit={handleSubmit}>
             <input
               type="url"
               value={originalUrl}
@@ -111,14 +111,14 @@ export function UrlShortner() {
           </form>
         </div>
 
-        <div className="p-4 sm:p-6">
+        <div className="p-5 sm:p-7">
           {message ? (
             <div className="mb-4 rounded-2xl border border-[#CFEBFF] bg-[#CFEBFF]/50 px-4 py-3 text-sm font-medium text-[#24506f]">
               {message}
             </div>
           ) : null}
 
-          <div className="overflow-x-auto rounded-3xl border border-amber-200 bg-white shadow-sm">
+          <div className="overflow-x-auto rounded-[1.75rem] border border-amber-200 bg-white shadow-sm">
             <table className="min-w-full divide-y divide-amber-100 text-left">
               <thead className="bg-[#FFFCE1]">
                 <tr>
