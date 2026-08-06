@@ -6,6 +6,7 @@ const API_BASE = 'http://localhost:8000';
 type UrlItem = {
   id?: number | string;
   original_url?: string;
+  short_code?: string;
   short_url?: string;
 };
 
@@ -39,7 +40,7 @@ export function UrlShortner() {
 
     setLoading(true);
     try {
-      await axios.post(`${API_BASE}/shorten`, { url: originalUrl });
+      await axios.post(`${API_BASE}/shorten`, { original_url: originalUrl });
       setMessage('URL shortened successfully!');
       setOriginalUrl('');
       fetchUrls();
@@ -59,15 +60,15 @@ export function UrlShortner() {
     setTimeout(() => setMessage(''), 3000);
   };
 
-  const deleteUrl = async (id?: number | string) => {
-    if (!id) {
-      setMessage('Invalid URL ID.');
+  const deleteUrl = async (shortCode?: string) => {
+    if (!shortCode) {
+      setMessage('Invalid short code.');
       setTimeout(() => setMessage(''), 3000);
       return;
     }
 
     try {
-      await axios.delete(`${API_BASE}/delete/${id}`);
+      await axios.delete(`${API_BASE}/delete/${shortCode}`);
       setMessage('URL deleted successfully!');
       fetchUrls();
     } catch (error) {
@@ -79,51 +80,105 @@ export function UrlShortner() {
   };
 
   return (
-    <div className="shortener-shell">
-      <div className="shortener-card">
-        <div className="hero-panel">
-          <p className="eyebrow">Smart link shortening</p>
-          <h1>Turn long URLs into tidy links.</h1>
-          <p>Paste a link, shorten it, and share it instantly.</p>
+    <main className="mx-auto flex min-h-screen w-full max-w-6xl items-center px-4 py-10 sm:px-6 lg:px-8">
+      <section className="w-full overflow-hidden rounded-[2rem] border border-white/70 bg-white/70 shadow-[0_24px_80px_rgba(255,190,145,0.25)] backdrop-blur">
+        <div className="grid gap-6 border-b border-amber-200/70 bg-gradient-to-r from-[#FFBE91] to-[#CFEBFF] p-6 sm:p-8 lg:grid-cols-[1.3fr_0.7fr] lg:items-end">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.35em] text-[#6a4c2c]">Smart link shortening</p>
+            <h1 className="mt-3 text-3xl font-semibold tracking-tight text-[#4f3422] sm:text-4xl">
+              Turn long URLs into tidy links.
+            </h1>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-[#5c4534] sm:text-base">
+              Paste a link, shorten it, and manage every generated URL in a clean table.
+            </p>
+          </div>
+
+          <form className="flex flex-col gap-3 rounded-3xl bg-white/70 p-4 shadow-sm ring-1 ring-white/60 sm:flex-row" onSubmit={handleSubmit}>
+            <input
+              type="url"
+              value={originalUrl}
+              onChange={(e) => setOriginalUrl(e.target.value)}
+              placeholder="https://example.com/very/long/path"
+              className="min-w-0 flex-1 rounded-2xl border border-amber-200 bg-white px-4 py-3 text-sm text-[#4f3422] outline-none transition placeholder:text-[#b08a6d] focus:border-[#FFBE91] focus:ring-2 focus:ring-[#CFEBFF]"
+            />
+            <button
+              className="inline-flex items-center justify-center rounded-2xl bg-[#FFBE91] px-5 py-3 text-sm font-semibold text-[#4f3422] transition hover:-translate-y-0.5 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60"
+              type="submit"
+              disabled={loading}
+            >
+              {loading ? 'Shortening...' : 'Shorten'}
+            </button>
+          </form>
         </div>
 
-        <form className="shortener-form" onSubmit={handleSubmit}>
-          <input
-            type="url"
-            value={originalUrl}
-            onChange={(e) => setOriginalUrl(e.target.value)}
-            placeholder="https://example.com/very/long/path"
-          />
-          <button className="primary" type="submit" disabled={loading}>
-            {loading ? 'Shortening...' : 'Shorten'}
-          </button>
-        </form>
+        <div className="p-4 sm:p-6">
+          {message ? (
+            <div className="mb-4 rounded-2xl border border-[#CFEBFF] bg-[#CFEBFF]/50 px-4 py-3 text-sm font-medium text-[#24506f]">
+              {message}
+            </div>
+          ) : null}
 
-        {message ? <div className="helper-text">{message}</div> : null}
+          <div className="overflow-x-auto rounded-3xl border border-amber-200 bg-white shadow-sm">
+            <table className="min-w-full divide-y divide-amber-100 text-left">
+              <thead className="bg-[#FFFCE1]">
+                <tr>
+                  <th className="px-4 py-4 text-xs font-bold uppercase tracking-[0.24em] text-[#6a4c2c]">Original URL</th>
+                  <th className="px-4 py-4 text-xs font-bold uppercase tracking-[0.24em] text-[#6a4c2c]">Short URL</th>
+                  <th className="px-4 py-4 text-xs font-bold uppercase tracking-[0.24em] text-[#6a4c2c]">Code</th>
+                  <th className="px-4 py-4 text-xs font-bold uppercase tracking-[0.24em] text-[#6a4c2c]">Actions</th>
+                </tr>
+              </thead>
 
-        <div className="url-list">
-          {urls.length === 0 ? (
-            <div className="empty-state">No links yet. Create your first short URL.</div>
-          ) : (
-            urls.map((item, index) => (
-              <div className="url-item" key={item.id ?? index}>
-                <div className="url-content">
-                  <strong>{item.original_url || 'Untitled link'}</strong>
-                  <span>{item.short_url || 'Generating...'}</span>
-                </div>
-                <div className="url-actions">
-                  <button type="button" className="secondary" onClick={() => copyToClipboard(item.short_url)}>
-                    Copy
-                  </button>
-                  <button type="button" className="ghost" onClick={() => deleteUrl(item.id)}>
-                    Delete
-                  </button>
-                </div>
-              </div>
-            ))
-          )}
+              <tbody className="divide-y divide-amber-100 bg-white">
+                {urls.length === 0 ? (
+                  <tr>
+                    <td className="px-4 py-8 text-center text-sm text-[#73543c]" colSpan={4}>
+                      No links yet. Create your first short URL.
+                    </td>
+                  </tr>
+                ) : (
+                  urls.map((item, index) => (
+                    <tr key={item.id ?? index} className="hover:bg-[#FFFCE1]/60">
+                      <td className="max-w-[24rem] px-4 py-4 text-sm text-[#4f3422]">
+                        <span className="block truncate font-medium">{item.original_url || 'Untitled link'}</span>
+                      </td>
+                      <td className="px-4 py-4 text-sm text-[#5f77a8]">
+                        <a
+                          className="break-all font-medium underline decoration-[#CFEBFF] decoration-2 underline-offset-4 hover:text-[#24506f]"
+                          href={item.short_url}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          {item.short_url || 'Generating...'}
+                        </a>
+                      </td>
+                      <td className="px-4 py-4 text-sm text-[#4f3422]">{item.short_code || '-'}</td>
+                      <td className="px-4 py-4">
+                        <div className="flex flex-wrap gap-2">
+                          <button
+                            type="button"
+                            className="rounded-full bg-[#CFEBFF] px-4 py-2 text-sm font-semibold text-[#1f2d39] transition hover:-translate-y-0.5 hover:shadow-sm"
+                            onClick={() => copyToClipboard(item.short_url)}
+                          >
+                            Copy
+                          </button>
+                          <button
+                            type="button"
+                            className="rounded-full bg-[#FFFCE1] px-4 py-2 text-sm font-semibold text-[#6a4c2c] transition hover:-translate-y-0.5 hover:shadow-sm"
+                            onClick={() => deleteUrl(item.short_code)}
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
-    </div>
+      </section>
+    </main>
   );
 }

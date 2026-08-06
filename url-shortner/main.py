@@ -53,7 +53,7 @@ def create_short_url(request: URLRequest, db: Session = Depends(get_db)):
         return {
             "original_url": existing.original_url,
             "short_code": existing.short_code,
-            "short_url": f"https://localhost:8000/{existing.short_code}"
+            "short_url": f"http://localhost:8000/{existing.short_code}"
         }
     short_code = generate_short_code()
     while db.query(URL).filter(URL.short_code == short_code).first():
@@ -67,7 +67,7 @@ def create_short_url(request: URLRequest, db: Session = Depends(get_db)):
     return {
         "original_url": new_url.original_url,
         "short_code": new_url.short_code,
-        "short_url": f"https://localhost:8000/{new_url.short_code}"
+        "short_url": f"http://localhost:8000/{new_url.short_code}"
     }
 
 @app.get("/all", response_model=list[URLResponse])
@@ -78,7 +78,7 @@ def get_all_urls(db: Session = Depends(get_db)):
         result.append({
             "original_url": url.original_url,
             "short_code": url.short_code,
-            "short_url": f"https://localhost:8000/{url.short_code}"
+            "short_url": f"http://localhost:8000/{url.short_code}"
         })
     return result
 
