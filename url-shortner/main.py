@@ -6,7 +6,7 @@ from sqlalchemy import Column, create_engine, Integer, String
 from fastapi.responses import RedirectResponse
 import string, random
 
-DATABASE_URL = "sqlite://./test.db"
+DATABASE_URL = "sqlite:///test.db"
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
@@ -99,4 +99,5 @@ def delete_short_url(short_code: str, db: Session = Depends(get_db)):
     db.delete(url_entry)
     db.commit()
     
-    return {"detail": "Short URL deleted successfully"}
+    return {"message": "Short URL deleted successfully"}
+
