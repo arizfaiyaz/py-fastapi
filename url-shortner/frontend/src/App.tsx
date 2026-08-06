@@ -1,13 +1,12 @@
-import './App.css'
+import './App.css';
+import { UrlShortner } from './components/UrlShortner';
 
 function App() {
   return (
-    <>
-      <div>
-        
-      </div>
-    </>
-  )
+    <main className="app-shell">
+      <UrlShortner />
+    </main>
+  );
 }
 
-export default App
+export default App;
