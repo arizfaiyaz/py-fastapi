@@ -2,7 +2,7 @@ from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, HttpUrl
 from sqlalchemy.orm import sessionmaker, declarative_base, session
-from sqlalchemy import column, create_engine, Integer, String
+from sqlalchemy import Column, create_engine, Integer, String
 from fastapi.responses import RedirectResponse
 import string, random
 
@@ -20,10 +20,10 @@ def get_db():
     
 class URL(Base):
     __tablename__ = "urls"
-    id = column(Integer, primary_key=True, index=True)
-    original_url = column(String, unique=True, nullable=False)
-    short_code = column(String, unique=True, index=True, nullable=False)
-    
+    id = Column(Integer, primary_key=True, index=True)
+    original_url = Column(String, unique=True, nullable=False)
+    short_code = Column(String, unique=True, index=True, nullable=False)
+
 Base.metadata.create_all(bind=engine)
 
 class URLRequest(BaseModel):
