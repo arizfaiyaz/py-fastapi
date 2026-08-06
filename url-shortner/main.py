@@ -82,10 +82,21 @@ def get_all_urls(db: Session = Depends(get_db)):
         })
     return result
 
-@app.get("/{short_url}")
+@app.get("/{short_code}")
 def redirect_to_original(short_code: str, db: Session = Depends(get_db)):
     url_entry = db.query(URL).filter(URL.short_code == short_code).first()
     if not url_entry:
         raise HTTPException(status_code=404, detail="Short URL not found")
     
     return RedirectResponse(url=url_entry.original_url)
+
+@app.delete("/delete/{short_code}")
+def delete_short_url(short_code: str, db: Session = Depends(get_db)):
+    url_entry = db.query(URL).filter(URL.short_code == short_code).first()
+    if not url_entry:
+        raise HTTPException(status_code=404, detail="Short URL not found")
+    
+    db.delete(url_entry)
+    db.commit()
+    
+    return {"detail": "Short URL deleted successfully"}
